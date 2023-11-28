@@ -1,7 +1,7 @@
 using arktiktest;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
-
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();//swagger
@@ -17,6 +17,7 @@ builder.Services.AddSwaggerGen(Options=>{
     Options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 }); 
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<DbMain>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
