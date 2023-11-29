@@ -3,10 +3,14 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
+using Hangfire.PostgreSql;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+builder.Services.AddHangfire(config => config.UsePostgreSqlStorage(c=>c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));//hangfire
+builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();//swagger
 builder.Services.AddScoped<IValidator<MaterialDTO>, MaterialValidator>();//validator
 builder.Services.AddScoped<IValidator<SellerDTO>, SellerValidator>();//validator
@@ -25,11 +29,13 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<DbMain>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 var app = builder.Build();
+app.UseHangfireDashboard();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 } 
+RecurringJob.AddOrUpdate<priceUpdater>("updateDb",x=>x.updatePrices(),"0 8 * * *",new RecurringJobOptions(){TimeZone=TimeZoneInfo.Local});
 app.UseStaticFiles();
 app.UseRouting();
 app.MapControllers();
