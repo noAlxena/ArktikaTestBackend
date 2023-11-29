@@ -7,13 +7,13 @@ using Hangfire.PostgreSql;
 using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+builder.Logging.ClearProviders();//logging
 builder.Logging.AddConsole();
 builder.Services.AddHangfire(config => config.UsePostgreSqlStorage(c=>c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));//hangfire
 builder.Services.AddHangfireServer();
+builder.Services.AddScoped<IValidator<MaterialDTO>, MaterialValidator>();//validators
+builder.Services.AddScoped<IValidator<SellerDTO>, SellerValidator>();
 builder.Services.AddEndpointsApiExplorer();//swagger
-builder.Services.AddScoped<IValidator<MaterialDTO>, MaterialValidator>();//validator
-builder.Services.AddScoped<IValidator<SellerDTO>, SellerValidator>();//validator
 builder.Services.AddSwaggerGen(Options=>{
     Options.SwaggerDoc("v1",new OpenApiInfo{
         Version = "v1",
@@ -25,9 +25,9 @@ builder.Services.AddSwaggerGen(Options=>{
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     Options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 }); 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));//mediatr
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<DbMain>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));//mediatr
+builder.Services.AddDbContext<DbMain>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));//Entity framework
 var app = builder.Build();
 app.UseHangfireDashboard();
 if (app.Environment.IsDevelopment())

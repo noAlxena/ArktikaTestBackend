@@ -2,17 +2,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace arktiktest{
     
+    /// <summary>
+    /// Класс для ежедневного обновления цен
+    /// </summary>
     class priceUpdater{
-        DbMain _dbl;
+        DbMain db;
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="db">база данных в которой будут обновлятся цены</param>
         public priceUpdater(DbMain db){
-            _dbl = db;
+            this.db = db;
         }
+
+        /// <summary>
+        /// Функция обновления цен
+        /// </summary>
         async public Task updatePrices(){
             var random = new Random();
-            List<Material> list = await _dbl.Materials.ToListAsync();
+            List<Material> list = await db.Materials.ToListAsync();
             foreach(var t in list)
                 t.Price = Convert.ToDecimal(random.NextDouble())*100;
-            await _dbl.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
     }
     
